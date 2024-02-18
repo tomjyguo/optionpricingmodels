@@ -1,22 +1,20 @@
-def two_state_option_tree(S, K, r, T, u, d, n):
-    dt = T / n
-    p = (1 + r * dt - d) / (u - d)
-    
-    # Initialize option values at maturity
-    option_values = [max(0, S * (u ** (n - k)) * (d ** k) - K) for k in range(n + 1)]
-    
-    # Calculate option values at each node backward in time
-    for j in range(n - 1, -1, -1):
-        for i in range(j + 1):
-            option_values[i] = max(0, np.exp(-r * dt) * (p * option_values[i] + (1 - p) * option_values[i + 1]))
-    
-    return option_values[0]
+import numpy as np
+from scipy.stats import norm
+
+def black_scholes(S, K, T, r, sigma, option_type):
+    d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+
+    if option_type == 'call':
+        option_price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    else:
+        option_price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+    return option_price
 
 # Variables:
 # S: Current stock price
 # K: Option strike price
-# r: Risk-free rate
 # T: Time to maturity
-# u: Up factor
-# d: Down factor
-# n: Number of time steps
+# r: Annual risk-free rate
+# sigma: Volatility
+# option_type: Either 'call' or 'put'
